@@ -45,7 +45,10 @@ flatpickr(refs.datePicker, {
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
-  onClose: pickerCloseHandler,
+  onClose: selectedDates => {
+    data.targetTimestamp = selectedDates[0].getTime();
+    startIsAble();
+  },
 });
 
 const renderTime = timestamp => {
@@ -60,13 +63,14 @@ const renderTime = timestamp => {
 
 const startIsAble = () => {
   if (data.targetTimestamp - Date.now() > 0) {
+    refs.startBtn.removeAttribute('disabled');
     return true;
   }
+
   refs.startBtn.setAttribute('disabled', true);
   data.targetTimestamp = null;
 
   iziToast.error({
-    title: 'Error',
     position: 'topCenter',
     message: 'Please choose a date in the future',
   });
@@ -74,34 +78,28 @@ const startIsAble = () => {
   return false;
 };
 
-function pickerCloseHandler(selectedDates) {
-  data.targetTimestamp = selectedDates[0].getTime();
-  if (startIsAble()) {
-    refs.startBtn.removeAttribute('disabled');
+function countDown() {
+  refs.startBtn.setAttribute('disabled', true);
+  refs.datePicker.setAttribute('disabled', true);
+  const diff = data.targetTimestamp - Date.now();
+
+  if (diff <= 0) {
+    refs.datePicker.removeAttribute('disabled');
+    clearInterval(data.timerID);
+    iziToast.success({
+      title: 'Thank you!',
+      position: 'topCenter',
+    });
+    return;
   }
+
+  renderTime(diff);
 }
 
-refs.startBtn.addEventListener('click', function () {
+refs.startBtn.addEventListener('click', () => {
   if (!startIsAble()) {
     return false;
   }
-
-  this.setAttribute('disabled', true);
-  refs.datePicker.setAttribute('disabled', true);
-
-  data.timerID = setInterval(() => {
-    const diff = data.targetTimestamp - Date.now();
-
-    if (diff <= 0) {
-      refs.datePicker.removeAttribute('disabled');
-      clearInterval(data.timerID);
-      iziToast.success({
-        title: 'Thank you!',
-        position: 'topLeft',
-      });
-      return;
-    }
-
-    renderTime(diff);
-  }, 1000);
+  countDown();
+  data.timerID = setInterval(countDown, 1000);
 });

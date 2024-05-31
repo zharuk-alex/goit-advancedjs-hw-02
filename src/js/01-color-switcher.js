@@ -14,6 +14,7 @@ function getRandomHexColor() {
 
 refs.startBtn.addEventListener('click', function () {
   this.setAttribute('disabled', true);
+  refs.body.style.backgroundColor = getRandomHexColor();
   intId = setInterval(() => {
     refs.body.style.backgroundColor = getRandomHexColor();
   }, 1000);
