@@ -35,6 +35,8 @@ const refs = {
   fields: {},
 };
 
+refs.startBtn.setAttribute('disabled', true);
+
 Array.from(document.querySelectorAll('.field .value')).map(ref => {
   const key = Object.keys(ref.dataset)?.[0];
   refs.fields[key] = ref;
